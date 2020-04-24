@@ -29,7 +29,7 @@ def copyFrame(inputFrame,outputFrame):
     if not os.path.isfile(src):
         return False
     copyfile(src, dst)
-    if outputFrame%20 == 19:
+    if outputFrame%100 == 99:
         print(str(outputFrame+1)+" time-altered frames saved.")
     return True
 
@@ -92,11 +92,10 @@ AUDIO_FADE_ENVELOPE_SIZE = 400 # smooth out transitiion's audio by quickly fadin
     
 createPath(TEMP_FOLDER)
 
-command = "ffmpeg -i "+INPUT_FILE+" -qscale:v "+str(FRAME_QUALITY)+" "+TEMP_FOLDER+"/frame%06d.jpg -hide_banner"
+command = "ffmpeg -i "+INPUT_FILE+" -q:v 1 -qmin 1 -qmax 1 "+TEMP_FOLDER+"/frame%06d.jpg -codec copy -hide_banner"
 subprocess.call(command, shell=True)
 
 command = "ffmpeg -i "+INPUT_FILE+" -ab 160k -ac 2 -ar "+str(SAMPLE_RATE)+" -vn "+TEMP_FOLDER+"/audio.wav"
-
 subprocess.call(command, shell=True)
 
 command = "ffmpeg -i "+TEMP_FOLDER+"/input.mp4 2>&1"
@@ -197,7 +196,7 @@ for endGap in range(outputFrame,audioFrameCount):
     copyFrame(int(audioSampleCount/samplesPerFrame)-1,endGap)
 '''
 
-command = "ffmpeg -framerate "+str(frameRate)+" -i "+TEMP_FOLDER+"/newFrame%06d.jpg -i "+TEMP_FOLDER+"/audioNew.wav -strict -2 "+OUTPUT_FILE
+command = "ffmpeg -framerate "+str(frameRate)+" -i "+TEMP_FOLDER+"/newFrame%06d.jpg -i "+TEMP_FOLDER+"/audioNew.wav -c:v libx265 -crf 15 -preset medium " +OUTPUT_FILE
 subprocess.call(command, shell=True)
 
 deletePath(TEMP_FOLDER)
